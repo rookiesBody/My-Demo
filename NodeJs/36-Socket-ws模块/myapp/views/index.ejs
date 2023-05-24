@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>首页</title>
+  <link rel='stylesheet' href='/stylesheets/style.css' />
+
+  <script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script>
+  <script>
+    /*
+      axios拦截器
+    */
+    // 请求拦截
+    axios.interceptors.request.use(function (config) {
+      const token = localStorage.getItem("token")
+      config.headers.Authorization = `Bearer ${token}`
+      return config;
+    }, function (error) {
+      // Do something with request error
+      return Promise.reject(error);
+    });
+
+    // 响应拦截
+    axios.interceptors.response.use(function (res) {
+      const {
+        authorization
+      } = res.headers
+      authorization && localStorage.setItem("token", authorization)
+      return res;
+    }, function (error) {
+      if (error.response.status === 401) {
+        localStorage.removeItem("token")
+        location.href = '/login'
+      }
+      return Promise.reject(error);
+    });
+  </script>
+  <style>
+    img {
+      width: 60px;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>后台系统-用户管理
+    <button id="exit">退出登录</button>
+  </h1>
+  <div>
+    <div>用户名：<input type="text" id="username"></div>
+    <div>密码：<input type="password" id="password"></div>
+    <div>年龄：<input type="number" id="age"></div>
+    <div>头像：<input type="file" id="avatar"></div>
+    <div><button id="register">添加用户</button> </div>
+    <br />
+    <br />
+  </div onclick>
+  <div>
+    <table id="tb1" border="1">
+      <thead>
+        <tr>
+          <td>id</td>
+          <td>用户名</td>
+          <td>年龄</td>
+          <td>头像</td>
+          <td>操作</td>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  <script>
+    let register = document.querySelector("#register")
+    let username = document.querySelector("#username")
+    let password = document.querySelector("#password")
+    let exitBtn = document.querySelector("#exit")
+    let age = document.querySelector("#age")
+    let avatar = document.querySelector("#avatar")
+    let myValue = null
+
+    document.addEventListener('DOMContentLoaded', function () {
+      //初始化渲染列表
+      axios.get(`/api/user/list?page=1&limit=5`)
+        .then(res => {
+          let tbody = document.querySelector("tbody")
+          tbody.innerHTML = res.data.data.map(item => `
+            <tr>
+              <td>${item._id}</td>
+              <td>${item.username}</td>
+              <td>${item.age}</td>
+              <td><img src="${item.avatar}" /></td>
+              <td><button id="update">更新用户</button>&nbsp;&nbsp;<button id="delete">删除用户</button></td>
+            </tr>
+          `)
+        })
+    })
+    window.onload = function () {
+      let deleteBtns = document.querySelectorAll("#delete")
+      let updates = document.querySelectorAll("#update")
+
+      for (const update of updates) {
+        //修改按钮
+        update.addEventListener('click', function () {
+          console.log(myValue);
+          axios.post(`/api/user/update/${myValue}`, {
+            username: username.value,
+            password: password.value,
+            age: age.value,
+          }).then(res => {
+            console.log(res.data);
+          })
+        })
+      }
+
+      for (const deleteBtn of deleteBtns) {
+        //删除按钮
+        deleteBtn.addEventListener('click', function () {
+          axios.get(`/api/user/delete/${myValue}`)
+            .then(res => {
+              console.log(res.data);
+            })
+        })
+      }
+
+    }
+
+    //添加按钮
+    register.onclick = () => {
+      console.log(username.value, password.value, age.value, avatar.files[0]);
+      
+      const formsData = new FormData()
+      formsData.append("username", username.value)
+      formsData.append("password", password.value)
+      formsData.append("age", age.value)
+      formsData.append("avatar", avatar.files[0])
+
+      axios.post(`/api/user/add`, formsData, {
+        headers: {
+          "Content-Type": "multipart/form-data"
+        }
+      }).then(res => {
+        console.log(res.data);
+      })
+    }
+
+    //退出按钮
+    exitBtn.onclick = () => {
+      //清除token
+      localStorage.removeItem("token")
+      location.href = '/login'
+    }
+
+    document.querySelector('table').addEventListener('click', function (e) {
+      if (e.target.tagName === 'BUTTON') {
+        var tr = e.target.closest('tr')
+        var value = tr.querySelector('td:first-child').textContent
+        console.log('value', value)
+        myValue = value
+      }
+    }, true)
+  </script>
+</body>
+
+</html>

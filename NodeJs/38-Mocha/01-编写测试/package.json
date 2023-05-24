@@ -1,0 +1,15 @@
+{
+  "name": "mochademo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "sum.js",
+  "dependencies": {
+    "mocha": "^10.2.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "mocha"
+  },
+  "author": "",
+  "license": "ISC"
+}

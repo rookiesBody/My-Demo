@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login</title>
+  <link rel="stylesheet" href="/css/login.css">
+</head>
+<body>
+  <div>
+    用户名: <input type="username" id="username"/>
+  </div>
+  <div>
+    密码: <input type="password" id="password"/>
+  </div>
+  <div>
+    <button id="login-post">登录</button>
+  </div>
+
+  <script>
+    let loginPOST = document.querySelector("#login-post")
+    let username = document.querySelector("#username")
+    let password = document.querySelector("#password")
+
+    loginPOST.onclick = () => {
+      // get请求
+      fetch(`/user/login`, {
+        method: 'POST',
+        body: `username=${username.value}&password=${password.value}`,
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded"
+        }
+      })
+        .then(res => res.json()).then(res => {
+          if(res.status === 1) {
+            location.href = '/'
+          }
+        })
+    }
+  </script>
+</body>
+</html>

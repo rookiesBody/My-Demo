@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script src="https://cdn.socket.io/4.4.1/socket.io.min.js"
+    integrity="sha384-fKnu0iswBIqkjxrhQCTZ7qlLHOFEgNkRmK2vaO/LbTZSXdJfAu6ewRBdwHPhBo/H" crossorigin="anonymous">
+  </script>
+</head>
+
+<body>
+  <h3>聊天室~~</h3>
+  <h3>当前用户：
+    <b id="user"></b>
+  </h3>
+  <input type="text" id="text"> <button id="send">Send</button>
+
+  <select id="select"></select>
+
+  <script>
+    var select = document.querySelector('#select')
+    var text = document.querySelector('#text')
+    var send = document.querySelector('#send')
+    var user = document.querySelector('#user')
+    user.innerHTML = localStorage.getItem('username')
+    const WebSocketType = {
+      Error: 0, //错误
+      GroupList: 1,
+      GroupChat: 2,
+      SingleChat: 3
+    }
+
+    //引入socket.io js端代码
+    const socket = io(`ws://localhost:3000?token=${localStorage.getItem("token")}`)
+    socket.on("init", (msgObj) => {
+      console.log(msgObj);
+    })
+
+    socket.on(WebSocketType.Error, (msgObj) => {
+      localStorage.removeItem("token")
+      localStorage.removeItem("username")
+      location.href = '/login'
+    })
+
+    socket.on(WebSocketType.GroupList, (msgObj) => {
+      console.log(msgObj);
+      const onlineList = msgObj.data
+      select.innerHTML = ""
+      select.innerHTML = `<option value="all">all</option>` + onlineList.map(item =>
+        `<option value="${item._id}">${item._id}</option>`).join("")
+    })
+
+    socket.on(WebSocketType.GroupChat, (msgObj) => {
+      console.log(msgObj);
+    })
+
+    socket.on(WebSocketType.SingleChat, (msgObj) => {
+      console.log(msgObj);
+    })
+
+    send.onclick = () => {
+      if (select.value === 'all') {
+        socket.emit(WebSocketType.GroupChat, createMessage(text.value))
+      } else {
+        socket.emit(WebSocketType.SingleChat, createMessage(text.value, select.value))
+      }
+    }
+
+    function createMessage(data, to = "") {
+      return {
+        data,
+        to
+      }
+    }
+  </script>
+</body>
+
+</html>

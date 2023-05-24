@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script>
+  <script>
+    /*
+      axios拦截器
+    */
+    // 请求拦截
+    axios.interceptors.request.use(function (config) {
+      // Do something before request is sent
+      return config;
+    }, function (error) {
+      // Do something with request error
+      return Promise.reject(error);
+    });
+
+    // 响应拦截
+    axios.interceptors.response.use(function (res) {
+      const {authorization} = res.headers
+      authorization && localStorage.setItem("token", authorization)
+      return res;
+    }, function (error) {
+      return Promise.reject(error);
+    });
+  </script>
+
+</head>
+
+<body>
+  <h1>登录界面</h1>
+  <div>
+    用户名: <input type="username" id="username" />
+  </div>
+  <div>
+    密码: <input type="password" id="password" />
+  </div>
+
+  <button id="loginBtn">登录</button>
+
+  <script>
+    let username = document.querySelector("#username")
+    let password = document.querySelector("#password")
+    let loginBtn = document.querySelector("#loginBtn")
+
+    loginBtn.onclick = () => {
+      axios.post(`/user/login`, {
+        username: username.value,
+        password: password.value,
+      }).then(res => {
+        if (res.data.status === 1) {
+
+          location.href = "./"
+        } else {
+          alert("登录失败~")
+        }
+      })
+    }
+  </script>
+</body>
+
+</html>

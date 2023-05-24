@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+  <h3>聊天室~~</h3>
+  <input type="text" id="text"> <button id="send">Send</button>
+
+  <select id="select"></select>
+
+  <script>
+    var select = document.querySelector('#select')
+    var text = document.querySelector('#text')
+    var send = document.querySelector('#send')
+
+    send.onclick = () => {
+      if (select.value === 'all') {
+        ws.send(createMessage(WebSocketType.GroupChat, text.value))
+      } else {
+        ws.send(createMessage(WebSocketType.SingleChat, text.value, select.value))
+      }
+    }
+
+    var ws = new WebSocket(`ws://localhost:8080?token=${localStorage.getItem("token")}`)
+    const WebSocketType = {
+      Error: 0, //错误
+      GroupList: 1,
+      GroupChat: 2,
+      SingleChat: 3
+    }
+
+    ws.onopen = () => {
+      console.log('连接成功');
+    }
+    ws.onerror = (err) => {
+      console.log(err);
+    }
+    ws.onmessage = (msgObj) => {
+      msgObj = JSON.parse(msgObj.data)
+
+      switch (msgObj.type) {
+        case WebSocketType.Error:
+          localStorage.removeItem("token")
+          location.href = "/login"
+          break
+        case WebSocketType.GroupList:
+          const onlineList = JSON.parse(msgObj.data)
+          select.innerHTML = ""
+          select.innerHTML = `<option value="all">all</option>` + onlineList.map(item =>
+            `<option value="${item._id}">${item._id}</option>`).join("")
+          break
+        case WebSocketType.GroupChat:
+          console.log(msgObj);
+          break
+        case WebSocketType.SingleChat:
+          console.log(msgObj);
+          break
+      }
+    }
+    ws.send("客户端向服务端发送~~")
+
+    function createMessage(type, data, to="") {
+      return JSON.stringify({
+        type,
+        data,
+        to
+      })
+    }
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>首页</title>
+  <script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script>
+  <script>
+    /*
+      axios拦截器
+    */
+    // 请求拦截
+    axios.interceptors.request.use(function (config) {
+      const token = localStorage.getItem("token")
+      config.headers.Authorization = `Bearer ${token}`
+      return config;
+    }, function (error) {
+      // Do something with request error
+      return Promise.reject(error);
+    });
+
+    // 响应拦截
+    axios.interceptors.response.use(function (res) {
+      const {
+        authorization
+      } = res.headers
+      authorization && localStorage.setItem("token", authorization)
+      return res;
+    }, function (error) {
+      if (error.response.status === 401) {
+        localStorage.removeItem("token")
+        location.href = '/login'
+      }
+      return Promise.reject(error);
+    });
+  </script>
+  <style>
+    img {
+      width: 60px;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>后台系统-用户管理
+    <button id="exit">退出登录</button>
+  </h1>
+
+  <div>
+    <table id="tb1" border="1">
+      <thead>
+        <tr>
+          <td>id</td>
+          <td>用户名</td>
+          <td>年龄</td>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  <script>
+    let exitBtn = document.querySelector("#exit")
+
+    document.addEventListener('DOMContentLoaded', function () {
+      //初始化渲染列表
+      axios.get(`/user/list`)
+        .then(res => {
+          let tbody = document.querySelector("tbody")
+          tbody.innerHTML = res.data.data.map(item => `
+            <tr>
+              <td>${item._id}</td>
+              <td>${item.username}</td>
+              <td>${item.age}</td>
+            </tr>
+          `)
+        })
+    })
+
+    //退出按钮
+    exitBtn.onclick = () => {
+      //清除token
+      localStorage.removeItem("token")
+      location.href = '/login'
+    }
+  </script>
+</body>
+
+</html>

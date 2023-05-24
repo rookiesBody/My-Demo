@@ -1,0 +1,7 @@
+.App {
+  display: flex;
+  position: absolute;
+  left: 10%;
+  bottom: 50px;
+  width: 80%;
+}

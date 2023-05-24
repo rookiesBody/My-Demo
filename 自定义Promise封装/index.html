@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Promise 自定义封装</title>
+  <script src="./promise.js"></script>
+  <style>
+    html {
+      background-color: #999;
+    }
+  </style>
+</head>
+
+<body>
+  <script>
+    // let p = new Promise((resolve, reject) => {
+    //   setTimeout(() => {
+    //     resolve('ok~')
+    //     reject('err!')
+    //   }, 1000)
+    // })
+
+    // let p = Promise.resolve('OK')
+    // console.log(p);
+    // let p2 = Promise.reject('error~')
+    // console.log(p2);
+
+    let p = new Promise((resolve, reject) => {
+      reject('ok1')
+    })
+    let p2 = Promise.resolve('ok2')
+    let p3 = Promise.reject('ok3')
+    // let result = Promise.all([p, p2, p3])
+    let result = Promise.race([p, p2, p3])
+    console.log(result);
+
+    // p.then(val => {
+    //   console.log(111);
+    // }).then(val => {
+    //   console.log(222);
+    // }).then(val => {
+    //   console.log(333);
+    // }).catch(reason => {
+    //   console.log(reason);
+    // })
+  </script>
+</body>
+
+</html>
